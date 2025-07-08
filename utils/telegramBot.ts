@@ -186,31 +186,10 @@ bot.command('start', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) return;
 
-    // Load existing wallets
-    // const storedWallets = walletStorage.loadWallets(userId);
-    // if (storedWallets) {
-    //     // Initialize wallets in SniperBot
-    //     // for (const [network, walletData] of Object.entries(storedWallets)) {
-    //     //     if (walletData.isActive) {
-    //     //         sniperBot.setUserWallet(userId, network as 'ETH' | 'BSC' | 'SOL', walletData.privateKey);
-    //     //     }
-    //     // }
+    // 1. Always greet and show menu first
+    await ctx.reply('Welcome to the Sniper Bot! 🚀 Please choose an option:', startSuggestionsKeyboard);
 
-    //     // Show wallet balances
-    //     let balanceMessage = '📊 Your Wallets:\n\n';
-    //     for (const network of ['ETH', 'BSC', 'SOL'] as const) {
-    //         const wallet = sniperBot.getUserWallet(userId, network);
-    //         if (wallet) {
-    //             const balance = await sniperBot.getWalletBalance(userId, network);
-    //             balanceMessage += `${network === 'ETH' ? '🔷' : network === 'BSC' ? '🟡' : '🟣'} ${network}:\n`;
-    //             balanceMessage += `Address: \`${wallet.address}\`\n`;
-    //             balanceMessage += `Balance: ${balance}\n\n`;
-    //         }
-    //     }
-    //     await ctx.reply(balanceMessage, { parse_mode: 'Markdown' });
-    // }
-
-    // Show configuration status
+    // 2. Then show config status
     const userConfig = sniperBot.getUserConfig(userId);
     if (userConfig) {
         await ctx.reply(
@@ -221,11 +200,15 @@ bot.command('start', async (ctx) => {
             `Take Profit: ${userConfig.takeProfit}%`
         );
     } else {
-        await ctx.reply('⚠️ No configuration set. Please set your configuration first.');
-        await ctx.scene.enter('config');
+        // Show a message with a Set Config button
+        await ctx.reply('⚠️ No configuration set. Please set your configuration first.', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: 'Set Config', callback_data: 'set_config' }]
+                ]
+            }
+        });
     }
-
-    await ctx.reply('Welcome to the Sniper Bot! 🚀 Please choose an option:', startSuggestionsKeyboard);
 });
 
 bot.command('config', async (ctx) => {
@@ -349,7 +332,32 @@ bot.action('recover_wallet', async (ctx) => {
 
 bot.action('settings', async (ctx) => {
     await ctx.answerCbQuery();
-    await ctx.reply('Settings menu is under development.', backToMainKeyboard);
+    const userId = ctx.from?.id;
+    if (!userId) return;
+
+    const settingsKeyboard = Markup.keyboard([
+        ['📊 Set Validation Criteria', '📈 View Sniped Tokens'],
+        ['📊 View Paper Trading Tokens', '⚙️ Set Trading Config'],
+        ['🔢 Set Trade Limit', '🔄 Reset Trade Limit'],
+        ['🔙 Back to Main']
+    ]).resize();
+
+    await ctx.reply('⚙️ Settings Menu:', settingsKeyboard);
+});
+
+// Add /settings command handler
+bot.command('settings', async (ctx) => {
+    const userId = ctx.from?.id;
+    if (!userId) return;
+
+    const settingsKeyboard = Markup.keyboard([
+        ['📊 Set Validation Criteria', '📈 View Sniped Tokens'],
+        ['📊 View Paper Trading Tokens', '⚙️ Set Trading Config'],
+        ['🔢 Set Trade Limit', '🔄 Reset Trade Limit'],
+        ['🔙 Back to Main']
+    ]).resize();
+
+    await ctx.reply('⚙️ Settings Menu:', settingsKeyboard);
 });
 
 bot.action('paper_trading', async (ctx) => {

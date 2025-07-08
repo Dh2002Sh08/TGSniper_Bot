@@ -42,6 +42,16 @@ const startBot = async (retryCount = 0) => {
         await bot.launch();
         console.log('Bot started successfully');
 
+        // Set Telegram slash commands after bot launch
+        await bot.telegram.setMyCommands([
+            { command: 'start', description: 'Start the bot' },
+            { command: 'config', description: 'Configure your settings' },
+            { command: 'loadwallet', description: 'Load your wallet' },
+            { command: 'help', description: 'Show help' },
+            // Add more as needed
+        ]);
+        console.log('Telegram bot commands set.');
+
         // Initialize and start enhanced token scanners for both bots
         await sniperBot.initializeEnhancedTokenScanner();
         await paperTradeBot.initializeEnhancedTokenScanner();
@@ -75,3 +85,11 @@ app.listen(PORT, () => {
     // Start the bot after the server is running
     startBot();
 }); 
+
+bot.action('set_config', async (ctx) => {
+    await ctx.answerCbQuery();
+    const userId = ctx.from?.id;
+    if (!userId) return;
+    await ctx.reply('⚙️ Let\'s set up your trading configuration!');
+    await ctx.scene.enter('configWizard');
+});
